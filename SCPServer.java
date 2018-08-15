@@ -19,8 +19,9 @@ public class SCPServer implements SCPServerInterface {
 			? new ServerSocket(port, 1, InetAddress.getLocalHost())
 			: new ServerSocket(port, 1, InetAddress.getByName(host));
 		
-			Socket client = server.accept();
-			System.out.println(message + " " + client.getInetAddress().getHostAddress());
+			Socket connection = server.accept();
+			Client client = new Client(connection.getInetAddress().getHostAddress(), connection.getPort());
+			System.out.println(client.toString() + "\nMESSAGE:" + this.message);
 		}
 		catch (IOException e) {
 
@@ -30,7 +31,9 @@ public class SCPServer implements SCPServerInterface {
 	}
 	
 	public void configure(String host, int port, String message){
-
+		this.host = host;
+		this.port = port;
+		this.message = message;
 	}
 
 	public void reject (){
