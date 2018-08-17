@@ -1,6 +1,6 @@
 import java.io.*;
 import java.net.*;
-
+import java.util.Date;
 
 public class SCPServer implements SCPServerInterface {
 	private String host, message;
@@ -31,7 +31,11 @@ public class SCPServer implements SCPServerInterface {
 				if (connectionData != null)
 				{
 					long requestCreated = Long.parseLong(connectionData[0]);
-					System.out.println("created at: " + requestCreated);
+					long timeDiff = (new Date()).getTime() - requestCreated;
+					
+					if (timeDiff < 5000) accept(connection, null);	
+					else 				 reject(connection, null);
+					System.out.println("time diff = " + timeDiff + " ms");
 				}
 				else {
 					//throw some error
