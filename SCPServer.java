@@ -55,26 +55,15 @@ public class SCPServer implements SCPServerInterface {
 
 			}
 			
-
-			//out.println(client.toString() + "\nMESSAGE:" + this.message);
 			in.close();
 			out.close();
 			connection.close();
 		}
-		catch (IOException e) {
-
-		}
+		catch (IOException e) {}
 		finally {
-			try {
-				server.close();
-			}
-			catch(IOException e) {
-				System.out.println("Could not terminate the connection");
-			}
-			
+			try {server.close();}
+			catch(IOException e) {System.out.println("Could not terminate the connection");}	
 		}
-		
-		
 	}
 	
 	public void configure(String host, int port, String message){
@@ -103,6 +92,7 @@ public class SCPServer implements SCPServerInterface {
 				output[0] = String.valueOf(splitInput[1]); // test for empty input or " ".
 			}
 			if (splitInput[0].equals(keywords[3])) {
+				System.out.println(input);
 				output[1] = String.valueOf(splitInput[1]); // test for empty input or " ".
 			}
 			else System.out.println(input);
