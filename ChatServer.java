@@ -3,11 +3,8 @@
 public class ChatServer {
 	private static SCPServer scp;
 	
-	public ChatServer() {
-		scp = new SCPServer();
-	}
-	
 	public static void main(String[] args){
+		scp = new SCPServer();
 		if 		(args.length > 3) 	return;
 		else if (args.length == 3){
 			if 	(!configureServer(args)){

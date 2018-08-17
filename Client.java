@@ -1,13 +1,13 @@
-import sun.security.x509.IPAddressName;
+
 
 public class Client {
     private String ipAddress, username;
     private int port;
     
     public Client() {
-        ipv4 = "";
-        username = "";
-        port = 0;
+        this.ipAddress = "";
+        this.username = "";
+        this.port = 0;
     }
 
     public Client(String ipAddress, int port){
