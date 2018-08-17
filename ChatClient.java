@@ -4,9 +4,9 @@ import java.util.Scanner;
 
 public class ChatClient {
  
-	private Socket socket;
-	private String hostname, username;
-	private int port;
+	private static Socket socket;
+	private static String username, hostname;
+	private static int port;
 	private static SCPClient scp;
 	//private Scanner console = new Scanner(System.in);
 	
@@ -15,20 +15,20 @@ public class ChatClient {
 		hostname = "localhost";
 		port = 3400;
 	}
-	
-	public ChatClient(String hostname, int port)
-	{
-		hostname = this.hostname;
-		port = this.port;
-	}
 
     public static void main(String[] args) {
 		scp = new SCPClient();
 		Scanner sc = new Scanner(System.in);
 		
-		System.out.print("Welcome to SCP Client!\nPlease enter a username: ");
-		String username = sc.nextLine();
-        scp.connect("localhost", 3400, username);
+		hostname = "localhost";
+		port = 3400;
+
+		// Get a username for the user.
+		System.out.print("Please enter a username: ");
+		username = sc.nextLine();
+
 		sc.close();
+		socket = scp.connect(hostname, port, username);
+		
 	}
 }

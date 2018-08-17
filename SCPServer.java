@@ -27,7 +27,15 @@ public class SCPServer implements SCPServerInterface {
 			String input = in.readLine();
 			if (input.equals("SCP CONNECT")) {
 				System.out.println(input);
-				connect(in);
+				String[] connectionData = connect(in);
+				if (connectionData != null)
+				{
+					long requestCreated = Long.parseLong(connectionData[0]);
+					System.out.println("created at: " + requestCreated);
+				}
+				else {
+					//throw some error
+				}
 				out.println("SCP DISCONNECT\nSCP END");
 			}
 			else if (input.equals("SCP ACKNOWLEDGE")) {
@@ -71,27 +79,33 @@ public class SCPServer implements SCPServerInterface {
 		this.message = message;
 	}
 
-	public void connect(BufferedReader in) {
+	public String[] connect(BufferedReader in) throws IOException {
 		String[] keywords = {"SERVERADDRESS","SERVERPORT","REQUESTCREATED", "USERNAME", "SCP END"};
-		try {
-			int i = 0;
-			String input;
-			while((input = in.readLine()) != null && i < keywords.length){
-				if (input.equals("SCP END")) {
-					System.out.println(input);
-					break;
-				}
-				if (!(input.split(" ")[0]).equals(keywords[i]) && !input.equals(keywords[i])) {
-					System.out.println("TERMINATING CONNECTION: expected value of " + keywords[i] + " did not match received value " + input + ".");
-					// return an indicating value
-					return;
-				}
-				else System.out.println(input);
-				i++;
+		String[] output = new String[2];
+		int i = 0;
+		String input;
+		while((input = in.readLine()) != null && i < keywords.length){
+			if (input.equals("SCP END")) {
+				System.out.println(input);
+				break;
 			}
-		} 
-		catch (IOException e) {}
-	}
+			String[] splitInput = input.split(" ");
+			if (!(splitInput[0]).equals(keywords[i]) && !input.equals(keywords[i])) {
+				System.out.println("TERMINATING CONNECTION: expected value of " + keywords[i] + " did not match received value " + input + ".");
+				// return an indicating value
+				return null;
+			}
+			if (splitInput[0].equals(keywords[2])) {
+				output[0] = String.valueOf(splitInput[1]); // test for empty input or " ".
+			}
+			if (splitInput[0].equals(keywords[3])) {
+				output[1] = String.valueOf(splitInput[1]); // test for empty input or " ".
+			}
+			else System.out.println(input);
+			i++;
+		}
+		return output;
+	} 
 
 	public void reject (Socket client, Client data){
 		//SCP REJECT
