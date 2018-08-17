@@ -5,7 +5,10 @@ public class ChatServer {
 	
 	public static void main(String[] args){
 		scp = new SCPServer();
-		if 		(args.length > 3) 	return;
+		if 	(args.length > 3) {
+			System.out.println("Too many arguements specified.");
+			return;
+		}	
 		else if (args.length == 3){
 			if 	(!configureServer(args)){
 				System.out.println("Invalid arguements specified.");
@@ -14,7 +17,7 @@ public class ChatServer {
 		}
 		
 		//start server listening on port 
-		
+		scp.start();
 	}
 	
 	private static boolean configureServer(String[] config){

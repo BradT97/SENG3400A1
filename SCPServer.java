@@ -18,7 +18,7 @@ public class SCPServer implements SCPServerInterface {
 			server = (host.equals("localhost")) 
 			? new ServerSocket(port, 1, InetAddress.getLocalHost())
 			: new ServerSocket(port, 1, InetAddress.getByName(host));
-		
+			System.out.println("server configured");
 			Socket connection = server.accept();
 			Client client = new Client(connection.getInetAddress().getHostAddress(), connection.getPort());
 			System.out.println(client.toString() + "\nMESSAGE:" + this.message);
@@ -36,14 +36,14 @@ public class SCPServer implements SCPServerInterface {
 		this.message = message;
 	}
 
-	public void reject (){
+	public void reject (Socket client, Client data){
 		//SCP REJECT
 		//TIMEDIFFERENTIAL <time difference>
 		//REMOTEADDRESS <requesting clients hostname>
 		//SCP END
 	}
 	
-	public void accept (){
+	public void accept (Socket client, Client data){
 		//SCP ACCEPT
 		//USERNAME <username as String with quotes>
 		//CLIENTADDRESS <client hostname>
@@ -51,12 +51,12 @@ public class SCPServer implements SCPServerInterface {
 		//SCP END
 	}
 	
-	public void acknowledge (){
+	public void acknowledge (Socket client, Client data){
 		//SCP ACKNOWLEDGE
 		//SCP END
 	}
 	
-	public void chat (){
+	public void chat (Socket client, Client data){
 		//SCP CHAT
 		//REMOTEADDRESS <remote hostname>
 		//REMOTEPORT <remote port>
@@ -66,7 +66,7 @@ public class SCPServer implements SCPServerInterface {
 		//SCP END
 	}
 	
-	public void disconnect() {
+	public void disconnect(Socket client, Client data) {
 		//SCP DISCONNECT
 		//SCP END
 	} 
