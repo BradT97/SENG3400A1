@@ -1,6 +1,6 @@
 import java.net.*;
 import java.io.*;
- 
+import java.util.Scanner;
 
 public class ChatClient {
  
@@ -24,47 +24,11 @@ public class ChatClient {
 
     public static void main(String[] args) {
 		scp = new SCPClient();
-        scp.connect("localhost", 3400, "BradT");
-		//if(args.length < 2)	ChatClient client = new ChatClient();
+		Scanner sc = new Scanner(System.in);
 		
-		/* else {
-			hostname = args[0];
-			port = Integer.Intparse(args[1]);
-			ChatClient client = new ChatClient(hostname, port);
-		}
-		
-		
-		
-		// get username from client
-		System.out.println("Please enter your username:")
-		username = console.next();
- 
-        try (socket = new Socket(hostname, port)) {
- 
-			String request = 
-				"SCP CONNECT " +
-				"SERVERADDRESS " + hostname +
-				"SERVERPORT " + Integer.toString(port) +
-				"REQUESTCREATED " + System.currentTimeMillis() +
-				"USERNAME " + username +
-				" SCP END";
- 
-        } catch (UnknownHostException ex) {
-            System.out.println("Server not found: " + ex.getMessage());
-		}
-		
-		boolean connected = true;
-		
-		while(connected)
-		{
-			
-			
-			
-			
-			
-		} */
-		
-		
-		
+		System.out.print("Welcome to SCP Client!\nPlease enter a username: ");
+		String username = sc.next();
+        scp.connect("localhost", 3400, username);
+		sc.close();
 	}
 }
