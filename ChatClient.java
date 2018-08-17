@@ -27,7 +27,7 @@ public class ChatClient {
 		Scanner sc = new Scanner(System.in);
 		
 		System.out.print("Welcome to SCP Client!\nPlease enter a username: ");
-		String username = sc.next();
+		String username = sc.nextLine();
         scp.connect("localhost", 3400, username);
 		sc.close();
 	}

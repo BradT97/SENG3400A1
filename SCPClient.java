@@ -1,11 +1,12 @@
 import java.net.*;
 import java.io.*;
+import java.util.Date;
 
 public class SCPClient implements SCPClientInterface {
 
     public Socket connect(String host, int port, String username){
         // Constructs header to send to SCPServer.
-        int epoch = 10000;
+        long epoch = (new Date()).getTime();
         String header = "SCP CONNECT\nSERVERADDRESS " + host + "\nSERVERPORT " + port + "\nREQUESTCREATED " + epoch + "\nUSERNAME \"" + username + "\"\nSCP END";
 
         try {

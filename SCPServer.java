@@ -20,7 +20,6 @@ public class SCPServer implements SCPServerInterface {
 			: new ServerSocket(port, 1, InetAddress.getByName(host));
 			
 			Socket connection = server.accept();
-			Client client = new Client(connection.getInetAddress().getHostAddress(), connection.getPort());
 			
 			PrintWriter out = new PrintWriter(connection.getOutputStream(), true);
 			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
@@ -78,7 +77,10 @@ public class SCPServer implements SCPServerInterface {
 			int i = 0;
 			String input;
 			while((input = in.readLine()) != null && i < keywords.length){
-				if (input.equals("SCP END")) break;
+				if (input.equals("SCP END")) {
+					System.out.println(input);
+					break;
+				}
 				if (!(input.split(" ")[0]).equals(keywords[i]) && !input.equals(keywords[i])) {
 					System.out.println("TERMINATING CONNECTION: expected value of " + keywords[i] + " did not match received value " + input + ".");
 					// return an indicating value
