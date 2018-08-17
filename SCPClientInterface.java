@@ -1,9 +1,9 @@
 import java.net.*;
 
 public interface SCPClientInterface {
-    public void connect();
-    public void acknowledgeConnection();
-    public void chat();
-    public void disconnect();
-    public void acknowledgeDisconnect();
+    public Socket connect(String host, int port, String username);
+    public void acknowledgeConnection(Socket connection);
+    public void chat(Socket connection);
+    public void disconnect(Socket connection);
+    public void acknowledgeDisconnect(Socket connection);
 }

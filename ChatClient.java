@@ -7,7 +7,7 @@ public class ChatClient {
 	private Socket socket;
 	private String hostname, username;
 	private int port;
-	
+	private static SCPClient scp;
 	//private Scanner console = new Scanner(System.in);
 	
 	
@@ -23,7 +23,8 @@ public class ChatClient {
 	}
 
     public static void main(String[] args) {
-        
+		scp = new SCPClient();
+        scp.connect("localhost", 3400, "BradT");
 		//if(args.length < 2)	ChatClient client = new ChatClient();
 		
 		/* else {
