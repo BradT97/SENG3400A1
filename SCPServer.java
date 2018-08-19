@@ -49,11 +49,8 @@ public class SCPServer implements SCPServerInterface {
 							out.close();
 							connection.close();
 						}
-						
 					}
-					else {
-						//throw some error
-					}
+					else { /*throw some error*/ }
 				}
 				else if (input.equals("SCP ACKNOWLEDGE")) {
 					System.out.println(input);
@@ -63,18 +60,12 @@ public class SCPServer implements SCPServerInterface {
 					}
 					System.out.println("--");
 				}
-				else if (input.equals("SCP CHAT")) {
-
-				}
+				else if (input.equals("SCP CHAT")) {}
 				else if (input.equals("SCP DISCONNECT")){
 					System.out.println(input);
 					terminate = true;
 				}
-				else {
-
-				}
-				
-				
+				else {}
 			}
 			in.close();
 			out.close();
@@ -82,8 +73,8 @@ public class SCPServer implements SCPServerInterface {
 		}
 		catch (IOException e) {}
 		finally {
-			try {server.close();}
-			catch(IOException e) {System.out.println("Could not terminate the connection");}	
+			try { server.close(); }
+			catch(IOException e) { System.out.println("Could not terminate the connection"); }	
 		}
 	}
 	
@@ -96,6 +87,7 @@ public class SCPServer implements SCPServerInterface {
 	public String[] connect(BufferedReader in) throws IOException {
 		String[] keywords = {"SERVERADDRESS","SERVERPORT","REQUESTCREATED", "USERNAME", "SCP END"};
 		String[] output = new String[2];
+		
 		int i = 0;
 		String input;
 		while((input = in.readLine()) != null && i < keywords.length){
@@ -109,30 +101,24 @@ public class SCPServer implements SCPServerInterface {
 				// return an indicating value
 				return null;
 			}
+
+			// REQUESTCREATED
 			if (splitInput[0].equals(keywords[2])) {
 				output[0] = String.valueOf(splitInput[1]); // test for empty input or " ".
 			}
+
+			// USERNAME
 			if (splitInput[0].equals(keywords[3])) {
 				System.out.println(input);
-				
 				output[1] = String.valueOf(input.replace(splitInput[0], "")); // test for empty input or " ".
 			}
+
 			else System.out.println(input);
 			i++;
 		}
 		System.out.println("--");
 		return output;
 	} 
-
-	
-	
-	public void accept (PrintWriter out){
-		//SCP ACCEPT
-		//USERNAME <username as String with quotes>
-		//CLIENTADDRESS <client hostname>
-		//CLIENTPORT <client port>
-		//SCP END
-	}
 	
 	public void acknowledge (Socket client, Client data){
 		//SCP ACKNOWLEDGE
