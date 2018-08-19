@@ -24,37 +24,58 @@ public class SCPServer implements SCPServerInterface {
 			PrintWriter out = new PrintWriter(connection.getOutputStream(), true);
 			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 
-			String input = in.readLine();
-			if (input.equals("SCP CONNECT")) {
-				System.out.println(input);
-				String[] connectionData = connect(in);
-				if (connectionData != null)
-				{
-					long requestCreated = Long.parseLong(connectionData[0]);
-					long timeDiff = (new Date()).getTime() - requestCreated;
+			String input; boolean terminate = false;
+			while ((input = in.readLine()) != null) {
+				if (terminate)	{
+					System.out.println(input);
+					break;
+				}
+				if (input.equals("SCP CONNECT")) {
+					System.out.println(input);
+					String[] connectionData = connect(in);
 					
-					if (timeDiff < 5000) accept(connection, null);	
-					else 				 reject(connection, null);
-					System.out.println("time diff = " + timeDiff + " ms");
+					if (connectionData != null) {
+						long requestCreated = Long.parseLong(connectionData[0]);
+						long timeDiff = (new Date()).getTime() - requestCreated;
+
+						if (timeDiff < 5000) {
+							String outString = "SCP ACCEPT\nUSERNAME " + connectionData[1] + "\nSERVERADDRESS " + host + "\nSERVERPORT " + port + "\nSCP END";
+							out.println(outString);
+						}	
+						else {
+							String outString = "SCP REJECT\nTIMEDIFFERENTIAL " + timeDiff + "\nREMOTEADDRESS " + connection.getRemoteSocketAddress().toString() + "\nSCP END";
+							out.println(outString);
+							in.close();
+							out.close();
+							connection.close();
+						}
+						
+					}
+					else {
+						//throw some error
+					}
+				}
+				else if (input.equals("SCP ACKNOWLEDGE")) {
+					System.out.println(input);
+					while ((input = in.readLine()) != null) {
+						System.out.println(input);
+						if (input.equals("SCP END")) break;
+					}
+					System.out.println("--");
+				}
+				else if (input.equals("SCP CHAT")) {
+
+				}
+				else if (input.equals("SCP DISCONNECT")){
+					System.out.println(input);
+					terminate = true;
 				}
 				else {
-					//throw some error
+
 				}
-				out.println("SCP DISCONNECT\nSCP END");
+				
+				
 			}
-			else if (input.equals("SCP ACKNOWLEDGE")) {
-
-			}
-			else if (input.equals("SCP CHAT")) {
-
-			}
-			else if (input.equals("SCP DISCONNECT")){
-
-			}
-			else {
-
-			}
-			
 			in.close();
 			out.close();
 			connection.close();
@@ -93,22 +114,19 @@ public class SCPServer implements SCPServerInterface {
 			}
 			if (splitInput[0].equals(keywords[3])) {
 				System.out.println(input);
-				output[1] = String.valueOf(splitInput[1]); // test for empty input or " ".
+				
+				output[1] = String.valueOf(input.replace(splitInput[0], "")); // test for empty input or " ".
 			}
 			else System.out.println(input);
 			i++;
 		}
+		System.out.println("--");
 		return output;
 	} 
 
-	public void reject (Socket client, Client data){
-		//SCP REJECT
-		//TIMEDIFFERENTIAL <time difference>
-		//REMOTEADDRESS <requesting clients hostname>
-		//SCP END
-	}
 	
-	public void accept (Socket client, Client data){
+	
+	public void accept (PrintWriter out){
 		//SCP ACCEPT
 		//USERNAME <username as String with quotes>
 		//CLIENTADDRESS <client hostname>
