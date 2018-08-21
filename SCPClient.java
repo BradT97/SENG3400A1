@@ -47,6 +47,14 @@ public class SCPClient implements SCPClientInterface {
                 //else
             }
             
+            while ((input = in.readLine()) != null){
+                System.out.println(input);
+                if (input.equals("SCP CHAT")){
+                    //handle chat
+                }
+                if (input.equals("SCP END")) break;
+            }
+
             /* in.close();
             in = new BufferedReader(new InputStreamReader(connection.getInputStream())); */
             terminate = true;
@@ -117,7 +125,7 @@ public class SCPClient implements SCPClientInterface {
         String username = "<user>", server = "<server ip>";
         int port = -1;
         String outString = "SCP ACKNOWLEDGE\nUSERNAME " + username + "\nSERVERADDRESS " + server + "\nSERVERPORT " + port + "\nSCP END";
-        
+        //outString += "\nSCP DISCONNECT\nSCP END";
         out.println(outString);
     }
 

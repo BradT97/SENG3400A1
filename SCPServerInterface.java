@@ -12,7 +12,8 @@ public interface SCPServerInterface {
 	 * 1 := username
 	 */
 	public String[] connect(BufferedReader in) throws IOException;
-	public void acknowledge(Socket client, Client data);
-	public void chat(Socket client, Client data);
-	public void disconnect(Socket client, Client data);
+	
+	public boolean chat(String msg);
+	public void disconnect();
+	public void acknowledge();
 }

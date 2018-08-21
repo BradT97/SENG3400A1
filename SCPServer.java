@@ -6,7 +6,8 @@ public class SCPServer implements SCPServerInterface {
 	private String host, message;
 	private int port;
 	private ServerSocket server;
-	
+	private Socket connection;
+
 	public SCPServer() {
 		host = "localhost";
 		port = 3400;
@@ -19,7 +20,7 @@ public class SCPServer implements SCPServerInterface {
 			? new ServerSocket(port, 1, InetAddress.getLocalHost())
 			: new ServerSocket(port, 1, InetAddress.getByName(host));
 			
-			Socket connection = server.accept();
+			connection = server.accept();
 			
 			PrintWriter out = new PrintWriter(connection.getOutputStream(), true);
 			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
@@ -59,6 +60,8 @@ public class SCPServer implements SCPServerInterface {
 						if (input.equals("SCP END")) break;
 					}
 					System.out.println("--");
+					chat(message);
+					return;
 				}
 				else if (input.equals("SCP CHAT")) {
 					System.out.println(input);
@@ -67,6 +70,7 @@ public class SCPServer implements SCPServerInterface {
 						if (input.equals("SCP END")) break;
 					}
 					System.out.println("--");
+					
 				}
 				else if (input.equals("SCP DISCONNECT")){
 					System.out.println(input);
@@ -126,8 +130,17 @@ public class SCPServer implements SCPServerInterface {
 		System.out.println("--");
 		return output;
 	} 
+
+	public boolean isConnected()
+	{
+		if(connection.isClosed()) return false;
+		return true;
+
+	}
+
+
 	
-	public void acknowledge (Socket client, Client data){
+	public void acknowledge (){
 		//SCP ACKNOWLEDGE
 		//SCP END
 
@@ -151,7 +164,7 @@ public class SCPServer implements SCPServerInterface {
 
 	}
 	
-	public void chat (Socket client, Client data){
+	public boolean chat (String msg){
 		//SCP CHAT
 		//REMOTEADDRESS <remote hostname>
 		//REMOTEPORT <remote port>
@@ -159,10 +172,29 @@ public class SCPServer implements SCPServerInterface {
 		//<line feed> ß This will cause 2 ‘\n’ characters to be sent!
 		//<message contents>
 		//SCP END
+
+		try{
+			PrintWriter out = new PrintWriter(connection.getOutputStream(), true);
+			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+
+			String outString = "SCP CHAT\nREMOTEADDRESS <remote>\nREMOTEPORT <port>\nMESSAGECONTENT\n\n" + msg + "\nSCP END";
+			out.println(outString);
+			
+			return true;
+		}
+		catch(IOException e)
+		{
+			return false;
+		}
 	}
 	
-	public void disconnect(Socket client, Client data) {
+	public void disconnect() {
 		//SCP DISCONNECT
 		//SCP END
+		try {
+			connection.close();
+		}
+		catch (IOException e) {}
+		
 	} 
 }

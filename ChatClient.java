@@ -37,11 +37,11 @@ public class ChatClient {
 			try {
 				String message = "Yo broooo";
 				System.out.println("sending:" + message);
-				scp.chat(socket, message);
+				//scp.chat(socket, message);
 				socket.close();
 			}
 			catch (IOException e) {
-
+				System.out.println("socket is closed");
 			}
 			
 		}

@@ -18,6 +18,16 @@ public class ChatServer {
 		
 		//start server listening on port 
 		scp.start();
+
+		while(scp.isConnected())
+		{
+			System.out.println("still connected");
+			scp.chat("hey");
+			scp.chat("who your daddy");
+			scp.disconnect();
+		}
+
+
 	}
 	
 	private static boolean configureServer(String[] config){
