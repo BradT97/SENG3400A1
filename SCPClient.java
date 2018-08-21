@@ -113,17 +113,23 @@ public class SCPClient implements SCPClientInterface {
         }
     }
 
-    public void acknowledgeConnection(PrintWriter out){
+    public void acknowledgeConnection(PrintWriter out)  {
         String username = "<user>", server = "<server ip>";
         int port = -1;
         String outString = "SCP ACKNOWLEDGE\nUSERNAME " + username + "\nSERVERADDRESS " + server + "\nSERVERPORT " + port + "\nSCP END";
-        //DEBUG
-        outString += "\nSCP DISCONNECT\nSCP END";
+        
         out.println(outString);
     }
 
-    public void chat(Socket connection){
+    public void chat(Socket connection, String message) throws IOException {
+        PrintWriter out = new PrintWriter(connection.getOutputStream(), true);
+        String remoteIp = "<remote ip>", remotePort = "<remote port>";
+        String outString = "SCP CHAT\nREMOTEADDRESS " + remoteIp + "\nREMOTEPORT " + remotePort + "\nMESSAGECONTENT\n\n" + message + "\nSCP END";
 
+        //DEBUG
+        outString += "\nSCP DISCONNECT\nSCP END";
+
+        out.println(outString);
     }
 
     public void disconnect(Socket connection){

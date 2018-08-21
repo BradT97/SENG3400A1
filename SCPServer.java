@@ -60,7 +60,14 @@ public class SCPServer implements SCPServerInterface {
 					}
 					System.out.println("--");
 				}
-				else if (input.equals("SCP CHAT")) {}
+				else if (input.equals("SCP CHAT")) {
+					System.out.println(input);
+					while ((input = in.readLine()) != null) {
+						System.out.println(input);
+						if (input.equals("SCP END")) break;
+					}
+					System.out.println("--");
+				}
 				else if (input.equals("SCP DISCONNECT")){
 					System.out.println(input);
 					terminate = true;
@@ -85,12 +92,12 @@ public class SCPServer implements SCPServerInterface {
 	}
 
 	public String[] connect(BufferedReader in) throws IOException {
-		String[] keywords = {"SERVERADDRESS","SERVERPORT","REQUESTCREATED", "USERNAME", "SCP END"};
+		String[] keywords = {"SERVERADDRESS","SERVERPORT","REQUESTCREATED", "USERNAME"};
 		String[] output = new String[2];
 		
 		int i = 0;
 		String input;
-		while((input = in.readLine()) != null && i < keywords.length){
+		while((input = in.readLine()) != null && i < keywords.length + 1){
 			if (input.equals("SCP END")) {
 				System.out.println(input);
 				break;

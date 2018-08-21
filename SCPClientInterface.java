@@ -1,4 +1,5 @@
 import java.net.*;
+import java.io.IOException;
 import java.io.PrintWriter;
 
 public interface SCPClientInterface {
@@ -9,7 +10,7 @@ public interface SCPClientInterface {
      */
     public Socket connect(String host, int port, String username);
     public void acknowledgeConnection(PrintWriter out);
-    public void chat(Socket connection);
+    public void chat(Socket connection, String message) throws IOException;
     public void disconnect(Socket connection);
     public void acknowledgeDisconnect(PrintWriter out);
 }

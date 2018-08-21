@@ -30,5 +30,20 @@ public class ChatClient {
 		sc.close();
 		socket = scp.connect(hostname, port, username);
 		
+		if (socket == null) {
+			System.out.println("Could not connect to server " + hostname + ":" + port);
+		}
+		else {
+			try {
+				String message = "Yo broooo";
+				System.out.println("sending:" + message);
+				scp.chat(socket, message);
+				socket.close();
+			}
+			catch (IOException e) {
+
+			}
+			
+		}
 	}
 }
