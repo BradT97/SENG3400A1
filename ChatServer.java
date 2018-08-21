@@ -4,7 +4,7 @@ public class ChatServer {
 	private static SCPServer scp;
 	
 	public static void main(String[] args){
-		Scanner scanner = new Scanner(System.in);
+		Scanner scanner; 
 		String input;
 
 		scp = new SCPServer();
@@ -21,6 +21,7 @@ public class ChatServer {
 		
 		//start server listening on port 
 		scp.start();
+		scanner = new Scanner(System.in);
 		while(scp.isConnected())
 		{
 			System.out.print("Message to client: ");
@@ -31,7 +32,7 @@ public class ChatServer {
 			
 		}
 
-
+		scanner.close();
 	}
 	
 	private static boolean configureServer(String[] config){

@@ -17,7 +17,7 @@ public class ChatClient {
 
     public static void main(String[] args) {
 		Scanner scanner;
-		String message;
+		//String message;
 
 		scp = new SCPClient();
 		scanner = new Scanner(System.in);
