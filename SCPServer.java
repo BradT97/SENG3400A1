@@ -63,15 +63,6 @@ public class SCPServer implements SCPServerInterface {
 					chat(message);
 					return;
 				}
-				else if (input.equals("SCP CHAT")) {
-					System.out.println(input);
-					while ((input = in.readLine()) != null) {
-						System.out.println(input);
-						if (input.equals("SCP END")) break;
-					}
-					System.out.println("--");
-					
-				}
 				else if (input.equals("SCP DISCONNECT")){
 					System.out.println(input);
 					terminate = true;
@@ -131,11 +122,9 @@ public class SCPServer implements SCPServerInterface {
 		return output;
 	} 
 
-	public boolean isConnected()
-	{
+	public boolean isConnected(){
 		if(connection.isClosed()) return false;
 		return true;
-
 	}
 
 
@@ -169,13 +158,13 @@ public class SCPServer implements SCPServerInterface {
 		//REMOTEADDRESS <remote hostname>
 		//REMOTEPORT <remote port>
 		//MESSAGECONTENT
-		//<line feed> ß This will cause 2 ‘\n’ characters to be sent!
+		//<line feed> This will cause 2 ‘\n’ characters to be sent!
 		//<message contents>
 		//SCP END
 
 		try{
 			PrintWriter out = new PrintWriter(connection.getOutputStream(), true);
-			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+			//BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 
 			String outString = "SCP CHAT\nREMOTEADDRESS <remote>\nREMOTEPORT <port>\nMESSAGECONTENT\n\n" + msg + "\nSCP END";
 			out.println(outString);
@@ -191,10 +180,47 @@ public class SCPServer implements SCPServerInterface {
 	public void disconnect() {
 		//SCP DISCONNECT
 		//SCP END
+		//System.out.println("trying to dc");
 		try {
+			PrintWriter out = new PrintWriter(connection.getOutputStream(), true);
+			String outString = "SCP DISCONNECT\nSCP END";
+			out.println(outString);
+			out.close();
 			connection.close();
+			//System.out.println("connection closed: " + connection.isClosed() + "\nconnection details: " + connection.toString());
 		}
-		catch (IOException e) {}
+		catch (IOException e) {
+			System.out.println("error closing the connection");
+		}
 		
 	} 
+
+	public boolean waitMessage() {
+		String input;
+		boolean terminate = false;
+		
+        try {
+			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            while ((input = in.readLine()) != null){
+                System.out.println(input);
+                if (input.equals("SCP DISCONNECT")) {
+                    terminate = true;
+                    System.out.println("terminate true");
+                }
+                else if (input.equals("SCP CHAT")){
+                    //handle chat
+                }
+                else if (input.equals("SCP END")) break;
+            }  
+            System.out.println("--");
+
+            if (terminate) {
+                disconnect();
+                return false;
+            }
+            return true;
+        } catch (IOException e){
+            return false;
+        }
+	}
 }

@@ -1,9 +1,12 @@
-
+import java.util.Scanner;
 
 public class ChatServer {
 	private static SCPServer scp;
 	
 	public static void main(String[] args){
+		Scanner scanner = new Scanner(System.in);
+		String input;
+
 		scp = new SCPServer();
 		if 	(args.length > 3) {
 			System.out.println("Too many arguements specified.");
@@ -18,13 +21,14 @@ public class ChatServer {
 		
 		//start server listening on port 
 		scp.start();
-
 		while(scp.isConnected())
 		{
-			System.out.println("still connected");
-			scp.chat("hey");
-			scp.chat("who your daddy");
-			scp.disconnect();
+			System.out.print("Message to client: ");
+			input = scanner.nextLine();
+			if (input.equals("DISCONNECT"))	scp.disconnect();
+			else scp.chat(input);
+			//scp.waitMessage();
+			
 		}
 
 

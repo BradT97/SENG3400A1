@@ -4,7 +4,6 @@ import java.util.Scanner;
 
 public class ChatClient {
  
-	private static Socket socket;
 	private static String username, hostname;
 	private static int port;
 	private static SCPClient scp;
@@ -17,32 +16,41 @@ public class ChatClient {
 	}
 
     public static void main(String[] args) {
+		Scanner scanner;
+		String message;
+
 		scp = new SCPClient();
-		Scanner sc = new Scanner(System.in);
+		scanner = new Scanner(System.in);
 		
 		hostname = "localhost";
 		port = 3400;
 
 		// Get a username for the user.
 		System.out.print("Please enter a username: ");
-		username = sc.nextLine();
-
-		sc.close();
-		socket = scp.connect(hostname, port, username);
+		username = scanner.nextLine();
 		
-		if (socket == null) {
-			System.out.println("Could not connect to server " + hostname + ":" + port);
-		}
+		
+		if (!scp.connect(hostname, port, username)) System.out.println("Could not connect to server " + hostname + ":" + port);
 		else {
-			try {
-				String message = "Yo broooo";
-				System.out.println("sending:" + message);
-				//scp.chat(socket, message);
-				socket.close();
+			//try {
+			//String message = "Yo broooo";
+			boolean keepAlive = true;
+			while (keepAlive) {
+				keepAlive = scp.waitMessage();
+				/* if (keepAlive) {
+					System.out.print("Message: ");
+					message = scanner.nextLine();
+					if (!scp.chat(message)) System.out.println("Error sending message at this time.");
+				} */
+				
 			}
-			catch (IOException e) {
-				System.out.println("socket is closed");
-			}
+			scanner.close();
+			//scp.chat(socket, message);
+				
+			//}
+			//catch (IOException e) {
+			//	System.out.println("socket is closed");
+			//}
 			
 		}
 	}
