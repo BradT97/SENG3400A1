@@ -21,13 +21,19 @@ public class ChatServer {
 		}
 		
 		//start server listening on port 
+		System.out.println("Starting up a new SCP Server!");
 		scp.start();
+
 		scanner = new Scanner(System.in);
+		if (scp.isConnected()) System.out.println("Successfully established connection to " + scp.getUser() + ".");
 		while(scp.isConnected())
 		{
 			System.out.print("Message to client: ");
 			input = scanner.nextLine();
-			if (input.equals("DISCONNECT"))	scp.disconnect();
+			if (input.equals("DISCONNECT"))	{
+				System.out.println("Disconnecting " + scp.getUser() + " from this session.");
+				scp.disconnect();
+			}
 			else scp.chat(input);
 			//scp.waitMessage();
 			

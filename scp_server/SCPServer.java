@@ -8,7 +8,7 @@ public class SCPServer implements SCPServerInterface {
 	private ServerSocket server;
 	private Socket connection;
 	private Writer fileWriter;
-	private String host, message;
+	private String host, message, user;
 	private int port;
 	
 	// Default Constructor.
@@ -16,7 +16,8 @@ public class SCPServer implements SCPServerInterface {
 		host = "localhost";
 		port = 3400;
 		message = "Welcome to SCP";
-		
+		user = "";
+
 		// Creates logs folder if not already created and opens file server_log for output.
 		File log_folder = new File("./logs");
 		if (!log_folder.exists()) {
@@ -111,6 +112,10 @@ public class SCPServer implements SCPServerInterface {
 		return true;
 	}
 	
+	public String getUser() {
+		return (user.trim()).replace("\"", "");
+	}
+
 	public boolean chat (String msg){
 		try {
 			PrintWriter out = new PrintWriter(connection.getOutputStream(), true);
@@ -134,6 +139,7 @@ public class SCPServer implements SCPServerInterface {
 			fileWriter.flush();
 			out.close();
 			connection.close();
+			user = "";
 		}
 		catch (IOException e) 	{System.out.println("error closing the connection: ");}
 	} 
@@ -141,7 +147,7 @@ public class SCPServer implements SCPServerInterface {
 
 	private boolean handleConnect(BufferedReader in, PrintWriter out) throws IOException {
 		String[] splitInput, keywords = {"SERVERADDRESS","SERVERPORT","REQUESTCREATED", "USERNAME"};
-		String input, created = "", username = "";
+		String input, created = "";
 		int i = 0;
 
 		// Reads the incoming data and ensures headers are correct.
@@ -165,12 +171,12 @@ public class SCPServer implements SCPServerInterface {
 
 			if (splitInput[0].equals(keywords[3])) { 	// USERNAME
 				fileWriter.write(input + "\n");
-				username = String.valueOf(input.replace(splitInput[0], "")); // test for empty input or " ".
+				user = String.valueOf(input.replace(splitInput[0], "")); // test for empty input or " ".
 			}
 			else fileWriter.write(input + "\n");
 			i++;
 		}
-		if (!sendConnectResponse(out, username, created)) {
+		if (!sendConnectResponse(out, created)) {
 			in.close();
 			out.close();
 			connection.close();
@@ -179,14 +185,14 @@ public class SCPServer implements SCPServerInterface {
 		return true;
 	}
 
-	private boolean sendConnectResponse(PrintWriter out, String username, String created) throws IOException {
+	private boolean sendConnectResponse(PrintWriter out, String created) throws IOException {
 		// Sends relevant SCP ACCEPT or SCP REJECT headers.
-		if (!created.equals("") && !username.equals("")) {
+		if (!created.equals("") && !user.equals("")) {
 			long requestCreated = Long.parseLong(created);
 			long timeDiff = (new Date()).getTime() - requestCreated;
 
 			if (timeDiff < 5000) {
-				String outString = "SCP ACCEPT\nUSERNAME " + username + "\nSERVERADDRESS " + this.host + "\nSERVERPORT " + this.port + "\nSCP END";
+				String outString = "SCP ACCEPT\nUSERNAME " + this.user + "\nSERVERADDRESS " + this.host + "\nSERVERPORT " + this.port + "\nSCP END";
 				out.println(outString);
 				fileWriter.write(">> SENT\n" + outString + "\n\n");
 				fileWriter.flush();
