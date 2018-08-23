@@ -1,3 +1,5 @@
+package scp_client;
+
 import java.net.*;
 import java.io.*;
 import java.util.Date;

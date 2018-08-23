@@ -1,3 +1,5 @@
+package scp_server;
+
 import java.io.*;
 import java.net.*;
 import java.util.Date;
@@ -19,7 +21,7 @@ public class SCPServer implements SCPServerInterface {
 			if (!log_folder.mkdir()) System.out.println("Could not locate log files.");
 		}
 		try {
-			fileWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("logs/transmission_logs.txt"), "utf-8"));
+			fileWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("logs/server_log.txt"), "utf-8"));
 		} catch (IOException e) {
 			System.out.println("Could not create transmission files.");
 		}

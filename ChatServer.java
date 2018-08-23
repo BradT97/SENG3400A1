@@ -1,4 +1,5 @@
 import java.util.Scanner;
+import scp_server.SCPServer;
 
 public class ChatServer {
 	private static SCPServer scp;
