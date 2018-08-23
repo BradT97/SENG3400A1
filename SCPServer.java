@@ -7,11 +7,23 @@ public class SCPServer implements SCPServerInterface {
 	private int port;
 	private ServerSocket server;
 	private Socket connection;
-
+	private Writer fileWriter;
+ 
 	public SCPServer() {
 		host = "localhost";
 		port = 3400;
 		message = "Welcome to SCP";
+		
+		File log_folder = new File("./logs");
+		if (!log_folder.exists()) {
+			if (!log_folder.mkdir()) System.out.println("Could not locate log files.");
+		}
+		try {
+			fileWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("logs/transmission_logs.txt"), "utf-8"));
+		} catch (IOException e) {
+			System.out.println("Could not create transmission files.");
+		}
+		
 	}
 	
 	public void start(){
@@ -28,11 +40,11 @@ public class SCPServer implements SCPServerInterface {
 			String input; boolean terminate = false;
 			while ((input = in.readLine()) != null) {
 				if (terminate)	{
-					System.out.println(input);
+					fileWriter.write(input + "\n");
 					break;
 				}
 				if (input.equals("SCP CONNECT")) {
-					System.out.println(input);
+					fileWriter.write(input + "\n");
 					String[] connectionData = connect(in);
 					
 					if (connectionData != null) {
@@ -54,17 +66,17 @@ public class SCPServer implements SCPServerInterface {
 					else { /*throw some error*/ }
 				}
 				else if (input.equals("SCP ACKNOWLEDGE")) {
-					System.out.println(input);
+					fileWriter.write(input + "\n");
 					while ((input = in.readLine()) != null) {
-						System.out.println(input);
+						fileWriter.write(input + "\n");
 						if (input.equals("SCP END")) break;
 					}
-					System.out.println("--");
+					fileWriter.write("--" + "\n");
 					chat(message);
 					return;
 				}
-				else if (input.equals("SCP DISCONNECT")){
-					System.out.println(input);
+				else if (input.equals("SCP DISCONNECT" )){
+					fileWriter.write(input + "\n");
 					terminate = true;
 				}
 				else {}
@@ -75,7 +87,11 @@ public class SCPServer implements SCPServerInterface {
 		}
 		catch (IOException e) {}
 		finally {
-			try { server.close(); }
+			try { 
+				server.close();
+				fileWriter.flush();
+				fileWriter.close(); 
+			}
 			catch(IOException e) { System.out.println("Could not terminate the connection"); }	
 		}
 	}
@@ -94,12 +110,12 @@ public class SCPServer implements SCPServerInterface {
 		String input;
 		while((input = in.readLine()) != null && i < keywords.length + 1){
 			if (input.equals("SCP END")) {
-				System.out.println(input);
+				fileWriter.write(input + "\n");
 				break;
 			}
 			String[] splitInput = input.split(" ");
 			if (!(splitInput[0]).equals(keywords[i]) && !input.equals(keywords[i])) {
-				System.out.println("TERMINATING CONNECTION: expected value of " + keywords[i] + " did not match received value " + input + ".");
+				fileWriter.write("TERMINATING CONNECTION: expected value of " + keywords[i] + " did not match received value " + input + "." + "\n -- \n");
 				// return an indicating value
 				return null;
 			}
@@ -111,14 +127,14 @@ public class SCPServer implements SCPServerInterface {
 
 			// USERNAME
 			if (splitInput[0].equals(keywords[3])) {
-				System.out.println(input);
+				fileWriter.write(input + "\n");
 				output[1] = String.valueOf(input.replace(splitInput[0], "")); // test for empty input or " ".
 			}
 
-			else System.out.println(input);
+			else fileWriter.write(input + "\n");
 			i++;
 		}
-		System.out.println("--");
+		fileWriter.write("--" + "\n");
 		return output;
 	} 
 
