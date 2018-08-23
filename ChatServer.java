@@ -28,6 +28,7 @@ public class ChatServer {
 		if (scp.isConnected()) System.out.println("Successfully established connection to " + scp.getUser() + ".");
 		while(scp.isConnected())
 		{
+			scp.waitInput();
 			System.out.print("Message to client: ");
 			input = scanner.nextLine();
 			if (input.equals("DISCONNECT"))	{

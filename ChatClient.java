@@ -19,7 +19,7 @@ public class ChatClient {
 
     public static void main(String[] args) {
 		Scanner scanner;
-		//String message;
+		String message;
 
 		scp = new SCPClient();
 		scanner = new Scanner(System.in);
@@ -34,11 +34,16 @@ public class ChatClient {
 		
 		if (!scp.connect(hostname, port, username)) System.out.println("Could not connect to server " + hostname + ":" + port);
 		else {
-			//try {
-			//String message = "Yo broooo";
 			boolean keepAlive = true;
 			while (keepAlive) {
 				keepAlive = scp.waitMessage();
+				
+				if (keepAlive) {
+					System.out.print("Message to Server: ");
+					message = scanner.nextLine();
+					scp.chat(message);
+				}
+
 				/* if (keepAlive) {
 					System.out.print("Message: ");
 					message = scanner.nextLine();

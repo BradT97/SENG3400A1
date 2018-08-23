@@ -43,6 +43,7 @@ public class SCPClient implements SCPClientInterface {
                 }
                 else {
                     System.out.println("Expected: SCP ACCEPT or SCP REJECT; Received: " + input);
+                    return false;
                 }
             }
             return true;

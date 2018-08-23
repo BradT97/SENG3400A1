@@ -144,6 +144,23 @@ public class SCPServer implements SCPServerInterface {
 		catch (IOException e) 	{System.out.println("error closing the connection: ");}
 	} 
 
+	public void waitInput() {
+		//should wait for scp chat or scp disconnect streams
+		try {
+			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+			String input;
+
+			fileWriter.write("<< RECEIVED\n");
+			while ((input = in.readLine()) != null) {
+				fileWriter.write(input + "\n");
+				if (input.equals("SCP END")) break;
+			} 
+			fileWriter.write("\n");
+		}
+		catch (IOException e) {
+
+		}
+	}
 
 	private boolean handleConnect(BufferedReader in, PrintWriter out) throws IOException {
 		String[] splitInput, keywords = {"SERVERADDRESS","SERVERPORT","REQUESTCREATED", "USERNAME"};
