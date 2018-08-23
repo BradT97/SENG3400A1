@@ -5,17 +5,19 @@ import java.net.*;
 import java.util.Date;
 
 public class SCPServer implements SCPServerInterface {
-	private String host, message;
-	private int port;
 	private ServerSocket server;
 	private Socket connection;
 	private Writer fileWriter;
- 
+	private String host, message;
+	private int port;
+	
+	// Default Constructor.
 	public SCPServer() {
 		host = "localhost";
 		port = 3400;
 		message = "Welcome to SCP";
 		
+		// Creates logs folder if not already created and opens file server_log for output.
 		File log_folder = new File("./logs");
 		if (!log_folder.exists()) {
 			if (!log_folder.mkdir()) System.out.println("Could not locate log files.");
@@ -23,12 +25,34 @@ public class SCPServer implements SCPServerInterface {
 		try {
 			fileWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("logs/server_log.txt"), "utf-8"));
 		} catch (IOException e) {
-			System.out.println("Could not create transmission files.");
+			System.out.println("Could not create server_log file.");
 		}
-		
 	}
 	
+	public SCPServer(String host, int port, String message) 	{ configure(host, port, message); }
+	
+	public void configure(String host, int port, String message){
+		this.host = host;
+		this.port = port;
+		this.message = message;
+	}
+
 	public void start(){
+		// Adds an emergency shutdown procedure to close connections.
+		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+			public void run() {
+				try {
+					server.close();
+					fileWriter.write("SYSTEM INTERRUPT: Successfully server shutdown.");
+					fileWriter.flush();
+					fileWriter.close();
+				} catch (IOException e) {
+					System.out.println("Unable to close server socket and filewriter.");
+				}
+			  
+			}
+		}));
+
 		try {
 			server = (host.equals("localhost")) 
 			? new ServerSocket(port, 1, InetAddress.getLocalHost())
@@ -43,42 +67,28 @@ public class SCPServer implements SCPServerInterface {
 			while ((input = in.readLine()) != null) {
 				if (terminate)	{
 					fileWriter.write(input + "\n");
+					fileWriter.flush();
 					break;
 				}
 				if (input.equals("SCP CONNECT")) {
-					fileWriter.write(input + "\n");
-					String[] connectionData = connect(in);
-					
-					if (connectionData != null) {
-						long requestCreated = Long.parseLong(connectionData[0]);
-						long timeDiff = (new Date()).getTime() - requestCreated;
-
-						if (timeDiff < 5000) {
-							String outString = "SCP ACCEPT\nUSERNAME " + connectionData[1] + "\nSERVERADDRESS " + host + "\nSERVERPORT " + port + "\nSCP END";
-							out.println(outString);
-						}	
-						else {
-							String outString = "SCP REJECT\nTIMEDIFFERENTIAL " + timeDiff + "\nREMOTEADDRESS " + connection.getRemoteSocketAddress().toString() + "\nSCP END";
-							out.println(outString);
-							in.close();
-							out.close();
-							connection.close();
-						}
+					fileWriter.write("<< Received\n" + input + "\n");
+					if (!handleConnect(in, out)){
+						System.out.println("Could not establish a connection.");
 					}
-					else { /*throw some error*/ }
 				}
 				else if (input.equals("SCP ACKNOWLEDGE")) {
-					fileWriter.write(input + "\n");
+					fileWriter.write("<< Received\n" + input + "\n");
 					while ((input = in.readLine()) != null) {
 						fileWriter.write(input + "\n");
 						if (input.equals("SCP END")) break;
 					}
-					fileWriter.write("--" + "\n");
+					fileWriter.write("\n");
+					fileWriter.flush();
 					chat(message);
 					return;
 				}
 				else if (input.equals("SCP DISCONNECT" )){
-					fileWriter.write(input + "\n");
+					fileWriter.write("<< Received\n" + input + "\n");
 					terminate = true;
 				}
 				else {}
@@ -90,155 +100,107 @@ public class SCPServer implements SCPServerInterface {
 		catch (IOException e) {}
 		finally {
 			try { 
-				server.close();
-				fileWriter.flush();
-				fileWriter.close(); 
+				server.close(); 
 			}
 			catch(IOException e) { System.out.println("Could not terminate the connection"); }	
 		}
 	}
 	
-	public void configure(String host, int port, String message){
-		this.host = host;
-		this.port = port;
-		this.message = message;
-	}
-
-	public String[] connect(BufferedReader in) throws IOException {
-		String[] keywords = {"SERVERADDRESS","SERVERPORT","REQUESTCREATED", "USERNAME"};
-		String[] output = new String[2];
-		
-		int i = 0;
-		String input;
-		while((input = in.readLine()) != null && i < keywords.length + 1){
-			if (input.equals("SCP END")) {
-				fileWriter.write(input + "\n");
-				break;
-			}
-			String[] splitInput = input.split(" ");
-			if (!(splitInput[0]).equals(keywords[i]) && !input.equals(keywords[i])) {
-				fileWriter.write("TERMINATING CONNECTION: expected value of " + keywords[i] + " did not match received value " + input + "." + "\n -- \n");
-				// return an indicating value
-				return null;
-			}
-
-			// REQUESTCREATED
-			if (splitInput[0].equals(keywords[2])) {
-				output[0] = String.valueOf(splitInput[1]); // test for empty input or " ".
-			}
-
-			// USERNAME
-			if (splitInput[0].equals(keywords[3])) {
-				fileWriter.write(input + "\n");
-				output[1] = String.valueOf(input.replace(splitInput[0], "")); // test for empty input or " ".
-			}
-
-			else fileWriter.write(input + "\n");
-			i++;
-		}
-		fileWriter.write("--" + "\n");
-		return output;
-	} 
-
 	public boolean isConnected(){
 		if(connection.isClosed()) return false;
 		return true;
 	}
-
-
-	
-	public void acknowledge (){
-		//SCP ACKNOWLEDGE
-		//SCP END
-
-		/* String[] keywords = {"USERNAME","SERVERADDRESS","SERVERPORT", "SCP END"};
-		try {
-			int i = 0;
-			String input;
-			while((input = in.readLine()) != null && i < keywords.length){
-				if (input.equals("SCP END")) break;
-				if (!(input.split(" ")[0]).equals(keywords[i]) && !input.equals(keywords[i])) {
-					System.out.println("TERMINATING CONNECTION: expected value of " + keywords[i] + " did not match received value " + input + ".");
-					// return an indicating value
-					return;
-				}
-				if (input.equals("USERNAME")) {} 
-				else System.out.println(input);
-				i++;
-			}
-		} 
-		catch (IOException e) {} */
-
-	}
 	
 	public boolean chat (String msg){
-		//SCP CHAT
-		//REMOTEADDRESS <remote hostname>
-		//REMOTEPORT <remote port>
-		//MESSAGECONTENT
-		//<line feed> This will cause 2 ‘\n’ characters to be sent!
-		//<message contents>
-		//SCP END
-
-		try{
+		try {
 			PrintWriter out = new PrintWriter(connection.getOutputStream(), true);
-			//BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-
 			String outString = "SCP CHAT\nREMOTEADDRESS <remote>\nREMOTEPORT <port>\nMESSAGECONTENT\n\n" + msg + "\nSCP END";
+
 			out.println(outString);
+			fileWriter.write(">> SENT\n" + outString + "\n\n");
+			fileWriter.flush();
 			
 			return true;
 		}
-		catch(IOException e)
-		{
-			return false;
-		}
+		catch(IOException e)	{return false;}
 	}
 	
 	public void disconnect() {
-		//SCP DISCONNECT
-		//SCP END
-		//System.out.println("trying to dc");
+		String outString = "SCP DISCONNECT\nSCP END";
 		try {
 			PrintWriter out = new PrintWriter(connection.getOutputStream(), true);
-			String outString = "SCP DISCONNECT\nSCP END";
 			out.println(outString);
+			fileWriter.write(">> SENT\n" + outString + "\n\n");
+			fileWriter.flush();
 			out.close();
 			connection.close();
-			//System.out.println("connection closed: " + connection.isClosed() + "\nconnection details: " + connection.toString());
 		}
-		catch (IOException e) {
-			System.out.println("error closing the connection");
-		}
-		
+		catch (IOException e) 	{System.out.println("error closing the connection: ");}
 	} 
 
-	public boolean waitMessage() {
-		String input;
-		boolean terminate = false;
-		
-        try {
-			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            while ((input = in.readLine()) != null){
-                System.out.println(input);
-                if (input.equals("SCP DISCONNECT")) {
-                    terminate = true;
-                    System.out.println("terminate true");
-                }
-                else if (input.equals("SCP CHAT")){
-                    //handle chat
-                }
-                else if (input.equals("SCP END")) break;
-            }  
-            System.out.println("--");
 
-            if (terminate) {
-                disconnect();
-                return false;
-            }
-            return true;
-        } catch (IOException e){
-            return false;
-        }
+	private boolean handleConnect(BufferedReader in, PrintWriter out) throws IOException {
+		String[] splitInput, keywords = {"SERVERADDRESS","SERVERPORT","REQUESTCREATED", "USERNAME"};
+		String input, created = "", username = "";
+		int i = 0;
+
+		// Reads the incoming data and ensures headers are correct.
+		while((input = in.readLine()) != null && i < keywords.length + 1){
+			if (input.equals("SCP END")) {
+				fileWriter.write(input + "\n\n");
+				fileWriter.flush();
+				break;
+			}
+
+			splitInput = input.split(" ");
+			if (!(splitInput[0]).equals(keywords[i]) && !input.equals(keywords[i])) {
+				fileWriter.write("TERMINATING CONNECTION: expected value of " + keywords[i] + " did not match received value " + input + "." + "\n\n");
+				fileWriter.flush();
+				return false;
+			}
+			
+			if (splitInput[0].equals(keywords[2])) { 	//REQUESTCREATED
+				created = String.valueOf(splitInput[1]); // test for empty input or " ".
+			}
+
+			if (splitInput[0].equals(keywords[3])) { 	// USERNAME
+				fileWriter.write(input + "\n");
+				username = String.valueOf(input.replace(splitInput[0], "")); // test for empty input or " ".
+			}
+			else fileWriter.write(input + "\n");
+			i++;
+		}
+		if (!sendConnectResponse(out, username, created)) {
+			in.close();
+			out.close();
+			connection.close();
+			return false;
+		}
+		return true;
+	}
+
+	private boolean sendConnectResponse(PrintWriter out, String username, String created) throws IOException {
+		// Sends relevant SCP ACCEPT or SCP REJECT headers.
+		if (!created.equals("") && !username.equals("")) {
+			long requestCreated = Long.parseLong(created);
+			long timeDiff = (new Date()).getTime() - requestCreated;
+
+			if (timeDiff < 5000) {
+				String outString = "SCP ACCEPT\nUSERNAME " + username + "\nSERVERADDRESS " + this.host + "\nSERVERPORT " + this.port + "\nSCP END";
+				out.println(outString);
+				fileWriter.write(">> SENT\n" + outString + "\n\n");
+				fileWriter.flush();
+				return true;
+			}	
+			else {
+				String outString = "SCP REJECT\nTIMEDIFFERENTIAL " + timeDiff + "\nREMOTEADDRESS " + connection.getRemoteSocketAddress().toString() + "\nSCP END";
+				out.println(outString);
+				fileWriter.write(">> SENT\n" + outString + "\n\n");
+				fileWriter.flush();
+				
+				return false;
+			}
+		}
+		else return false;
 	}
 }
