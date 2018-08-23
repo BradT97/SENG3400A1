@@ -136,29 +136,44 @@ public class SCPServer implements SCPServerInterface {
 			PrintWriter out = new PrintWriter(connection.getOutputStream(), true);
 			out.println(outString);
 			fileWriter.write(">> SENT\n" + outString + "\n\n");
-			fileWriter.flush();
 			out.close();
+		}
+		catch (IOException e) { /*Client has closed the connection*/} 
+		try {
+			fileWriter.flush();
 			connection.close();
 			user = "";
 		}
 		catch (IOException e) 	{System.out.println("error closing the connection: ");}
 	} 
 
-	public void waitInput() {
+	public String waitInput() {
 		//should wait for scp chat or scp disconnect streams
 		try {
 			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-			String input;
-
+			String input, output = "";
+			boolean terminate = false, contentFlag = false;
 			fileWriter.write("<< RECEIVED\n");
 			while ((input = in.readLine()) != null) {
 				fileWriter.write(input + "\n");
+				if (input.equals("SCP DISCONNECT")) 	terminate = true;
+
+				if (contentFlag && input.equals(""))	contentFlag = true;
+				else if (contentFlag) {
+					output = input;
+					contentFlag = false;
+				}
+
+				if (input.equals("MESSAGECONTENT")) 	contentFlag = true;
 				if (input.equals("SCP END")) break;
 			} 
 			fileWriter.write("\n");
+
+			if (terminate)	return "";
+			return output;
 		}
 		catch (IOException e) {
-
+			return "";
 		}
 	}
 

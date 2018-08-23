@@ -28,16 +28,22 @@ public class ChatServer {
 		if (scp.isConnected()) System.out.println("Successfully established connection to " + scp.getUser() + ".");
 		while(scp.isConnected())
 		{
-			scp.waitInput();
-			System.out.print("Message to client: ");
-			input = scanner.nextLine();
-			if (input.equals("DISCONNECT"))	{
-				System.out.println("Disconnecting " + scp.getUser() + " from this session.");
-				scp.disconnect();
+			String received = scp.waitInput();
+			if (!received.equals("")){
+				System.out.println(scp.getUser() + ": " + received);
+				System.out.print("Message to " + scp.getUser() + ": ");
+				input = scanner.nextLine();
+				if (input.equals("DISCONNECT"))	{
+					System.out.println("Disconnecting " + scp.getUser() + " from this session.");
+					scp.disconnect();
+				}
+				else scp.chat(input);
 			}
-			else scp.chat(input);
-			//scp.waitMessage();
-			
+			else {
+				System.out.println(scp.getUser() + " terminated the connection.");
+				scp.disconnect();
+				break;
+			}
 		}
 
 		scanner.close();

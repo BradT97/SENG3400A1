@@ -41,7 +41,10 @@ public class ChatClient {
 				if (keepAlive) {
 					System.out.print("Message to Server: ");
 					message = scanner.nextLine();
-					scp.chat(message);
+					if (message.equals("DISCONNECT")) {
+						scp.disconnect();
+					}
+					else keepAlive = scp.chat(message);
 				}
 
 				/* if (keepAlive) {

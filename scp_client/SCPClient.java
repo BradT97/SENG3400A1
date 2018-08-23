@@ -135,15 +135,13 @@ public class SCPClient implements SCPClientInterface {
         String remoteIp = "<remote ip>", remotePort = "<remote port>";
         String outString = "SCP CHAT\nREMOTEADDRESS " + remoteIp + "\nREMOTEPORT " + remotePort + "\nMESSAGECONTENT\n\n" + message + "\nSCP END";
 
-        //DEBUG
-        //outString += "\nSCP DISCONNECT\nSCP END";
-
         out.println(outString);
         return true;
     }
 
     public void disconnect(){
         try {
+            out.println("SCP DISCONNECT\nSCP END");
             in.close();
             out.close();
             connection.close();
