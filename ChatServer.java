@@ -5,10 +5,10 @@ public class ChatServer {
 	private static SCPServer scp;
 	
 	public static void main(String[] args){
-		Scanner scanner; 
+		Scanner scanner;
 		String input;
+		Boolean server = true;
 
-		scp = new SCPServer();
 		if 	(args.length > 3) {
 			System.out.println("Too many arguements specified.");
 			return;
@@ -22,30 +22,35 @@ public class ChatServer {
 		
 		//start server listening on port 
 		System.out.println("Starting up a new SCP Server!");
-		scp.start();
-
+		
 		scanner = new Scanner(System.in);
-		if (scp.isConnected()) System.out.println("Successfully established connection to " + scp.getUser() + ".");
-		while(scp.isConnected())
+		while(server)
 		{
-			String received = scp.waitInput();
-			if (!received.equals("")){
-				System.out.println(scp.getUser() + ": " + received);
-				System.out.print("Message to " + scp.getUser() + ": ");
-				input = scanner.nextLine();
-				if (input.equals("DISCONNECT"))	{
-					System.out.println("Disconnecting " + scp.getUser() + " from this session.");
-					scp.disconnect();
+			scp = new SCPServer();
+			scp.start();
+			
+			if (scp.isConnected()) System.out.println("Successfully established connection to " + scp.getUser() + ".");
+			while(scp.isConnected())
+			{
+				String received = scp.waitInput();
+				if (!received.equals("")){
+					System.out.println(scp.getUser() + ": " + received);
+					System.out.print("Message to " + scp.getUser() + ": ");
+					input = scanner.nextLine();
+					if (input.equals("DISCONNECT"))	{
+						System.out.println("Disconnecting " + scp.getUser() + " from this session.");
+						scp.disconnect();
+						server = false;
+					}
+					else scp.chat(input);
 				}
-				else scp.chat(input);
-			}
-			else {
-				System.out.println(scp.getUser() + " terminated the connection.");
-				scp.disconnect();
-				break;
+				else {
+					System.out.println(scp.getUser() + " terminated the connection.");
+					scp.disconnect();
+					break;
+				}
 			}
 		}
-
 		scanner.close();
 	}
 	
@@ -84,9 +89,5 @@ public class ChatServer {
 	  */
 	private static boolean validatePort(int port) {
 		return true;
-	}
-	
-	
-	
-	
+	}	
 }
