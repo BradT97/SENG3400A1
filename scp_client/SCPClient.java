@@ -105,27 +105,29 @@ public class SCPClient implements SCPClientInterface {
         return true;
     }
 
-    public boolean waitMessage() {
-        String input;
-        boolean terminate = false;
+    public String waitMessage() {
+        String input, output = "";
+        boolean terminate = false, contentFlag = false;
         try {
-            while ((input = in.readLine()) != null){
-                System.out.println(input);
-                if (input.equals("SCP DISCONNECT")) terminate = true;
-                else if (input.equals("SCP CHAT")){
-                    //handle chat
-                }
-                else if (input.equals("SCP END")) break;
-            }  
-            System.out.println("--");
+            while ((input = in.readLine()) != null) {
+				if (input.equals("SCP DISCONNECT")) 	terminate = true;
+
+				if (contentFlag && input.equals(""))	contentFlag = true;
+				else if (contentFlag && !input.equals("SCP END")) {
+					output += input;
+					
+				}
+				if (input.equals("MESSAGECONTENT")) 	contentFlag = true;
+				if (input.equals("SCP END")) break;
+			}
 
             if (terminate) {
                 disconnect();
-                return false;
+                return "DISCONNECT";
             }
-            return true;
+            return output;
         } catch (IOException e){
-            return false;
+            return "";
         }
     }
 

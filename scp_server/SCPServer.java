@@ -28,6 +28,21 @@ public class SCPServer implements SCPServerInterface {
 		} catch (IOException e) {
 			System.out.println("Could not create server_log file.");
 		}
+		// Adds an emergency shutdown procedure to close connections.
+		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+			public void run() {
+				try {
+					if(isConnected())	disconnect();
+					server.close();
+					fileWriter.write("SYSTEM INTERRUPT: Successfully server shutdown.");
+					fileWriter.flush();
+					fileWriter.close();
+					
+				} catch (IOException e) {
+					System.out.println("Unable to close server socket and filewriter.");
+				}
+			}
+		}));
 	}
 	
 	public SCPServer(String host, int port, String message) 	{ configure(host, port, message); }
@@ -39,20 +54,7 @@ public class SCPServer implements SCPServerInterface {
 	}
 
 	public void start(){
-		// Adds an emergency shutdown procedure to close connections.
-		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-			public void run() {
-				try {
-					server.close();
-					fileWriter.write("SYSTEM INTERRUPT: Successfully server shutdown.");
-					fileWriter.flush();
-					fileWriter.close();
-				} catch (IOException e) {
-					System.out.println("Unable to close server socket and filewriter.");
-				}
-			  
-			}
-		}));
+		
 
 		try {
 			server = (host.equals("localhost")) 
@@ -107,6 +109,10 @@ public class SCPServer implements SCPServerInterface {
 		}
 	}
 	
+	public int getPort() {
+		return this.port;
+	}
+
 	public boolean isConnected(){
 		if(connection.isClosed()) return false;
 		return true;
@@ -159,11 +165,9 @@ public class SCPServer implements SCPServerInterface {
 				if (input.equals("SCP DISCONNECT")) 	terminate = true;
 
 				if (contentFlag && input.equals(""))	contentFlag = true;
-				else if (contentFlag) {
-					output = input;
-					contentFlag = false;
+				else if (contentFlag && !input.equals("SCP END")) {
+					output += input;
 				}
-
 				if (input.equals("MESSAGECONTENT")) 	contentFlag = true;
 				if (input.equals("SCP END")) break;
 			} 

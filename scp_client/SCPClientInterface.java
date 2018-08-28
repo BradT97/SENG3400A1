@@ -13,7 +13,7 @@ public interface SCPClientInterface {
     public boolean connect(String host, int port, String username);
     public boolean acknowledgeConnection();
     public boolean chat(String message);
-    public boolean waitMessage();
+    public String waitMessage();
     public void disconnect();
     public void acknowledgeDisconnect(PrintWriter out);
 }

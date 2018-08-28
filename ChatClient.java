@@ -34,28 +34,23 @@ public class ChatClient {
 		
 		if (!scp.connect(hostname, port, username)) System.out.println("Could not connect to server " + hostname + ":" + port);
 		else {
-			boolean keepAlive = true;
-			while (keepAlive) {
-				keepAlive = scp.waitMessage();
+			String recieved;
+			while (true) {
+				recieved = scp.waitMessage();
 				
-				if (keepAlive) {
+				System.out.println("SERVER: " + recieved.replace("\\n", System.lineSeparator() + "SERVER: ") );
+				
+				if (!recieved.equals("")) {
 					System.out.print("Message to Server: ");
 					message = scanner.nextLine();
 					if (message.equals("DISCONNECT")) {
 						scp.disconnect();
+						break;
 					}
-					else keepAlive = scp.chat(message);
+					else scp.chat(message);
 				}
-
-				/* if (keepAlive) {
-					System.out.print("Message: ");
-					message = scanner.nextLine();
-					if (!scp.chat(message)) System.out.println("Error sending message at this time.");
-				} */
-				
 			}
 			scanner.close();
-			//scp.chat(socket, message);
 				
 			//}
 			//catch (IOException e) {
