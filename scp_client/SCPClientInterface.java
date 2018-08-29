@@ -15,5 +15,5 @@ public interface SCPClientInterface {
     public boolean chat(String message);
     public String waitMessage();
     public void disconnect();
-    public void acknowledgeDisconnect(PrintWriter out);
+    public void acknowledgeDisconnect();
 }

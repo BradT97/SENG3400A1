@@ -142,6 +142,7 @@ public class SCPServer implements SCPServerInterface {
 			PrintWriter out = new PrintWriter(connection.getOutputStream(), true);
 			out.println(outString);
 			fileWriter.write(">> SENT\n" + outString + "\n\n");
+			waitInput();
 			out.close();
 		}
 		catch (IOException e) { /*Client has closed the connection*/} 
@@ -152,6 +153,23 @@ public class SCPServer implements SCPServerInterface {
 		}
 		catch (IOException e) 	{System.out.println("error closing the connection: ");}
 	} 
+
+	public void acknowledgeDisconnect() {
+		String outString = "SCP ACKNOWLEDGE\nSCP END";
+		try {
+			PrintWriter out = new PrintWriter(connection.getOutputStream(), true);
+			out.println(outString);
+			fileWriter.write(">> SENT\n" + outString + "\n\n");
+			out.close();
+		}
+		catch (IOException e) { /*Client has closed the connection*/} 
+		try {
+			fileWriter.flush();
+			connection.close();
+			user = "";
+		}
+		catch (IOException e) 	{System.out.println("error closing the connection: ");}
+	}
 
 	public String waitInput() {
 		//should wait for scp chat or scp disconnect streams
@@ -173,11 +191,11 @@ public class SCPServer implements SCPServerInterface {
 			} 
 			fileWriter.write("\n");
 
-			if (terminate)	return "";
+			if (terminate)	return "DISCONNECT";
 			return output;
 		}
 		catch (IOException e) {
-			return "";
+			return "DISCONNECT";
 		}
 	}
 

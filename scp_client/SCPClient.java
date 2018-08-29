@@ -31,7 +31,7 @@ public class SCPClient implements SCPClientInterface {
             
             // Read input stream sent from server and send to relevant handler.
             while ((input = in.readLine()) != null){
-                System.out.println(input);
+                //System.out.println(input);
                 if (input.equals("SCP REJECT")) {
                     handleReject();
                     return false;
@@ -110,6 +110,7 @@ public class SCPClient implements SCPClientInterface {
         boolean terminate = false, contentFlag = false;
         try {
             while ((input = in.readLine()) != null) {
+                //System.out.println(input);
 				if (input.equals("SCP DISCONNECT")) 	terminate = true;
 
 				if (contentFlag && input.equals(""))	contentFlag = true;
@@ -122,7 +123,7 @@ public class SCPClient implements SCPClientInterface {
 			}
 
             if (terminate) {
-                disconnect();
+                acknowledgeDisconnect();
                 return "DISCONNECT";
             }
             return output;
@@ -144,6 +145,7 @@ public class SCPClient implements SCPClientInterface {
     public void disconnect(){
         try {
             out.println("SCP DISCONNECT\nSCP END");
+            waitMessage();
             in.close();
             out.close();
             connection.close();
@@ -152,8 +154,15 @@ public class SCPClient implements SCPClientInterface {
         }
     }
 
-    public void acknowledgeDisconnect(PrintWriter out){
+    public void acknowledgeDisconnect(){
+        try {
+            out.println("SCP ACKNOWLEDGE\nSCP END");
+            in.close();
+            out.close();
+            connection.close();
+        } catch (IOException e) {
 
+        }
     }
 }
 

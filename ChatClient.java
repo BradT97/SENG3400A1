@@ -9,7 +9,7 @@ public class ChatClient {
 	private static String username, hostname;
 	private static int port;
 	private static SCPClient scp;
-	//private Scanner console = new Scanner(System.in);
+	private static boolean notBlank = true;
 	
 	
 	public ChatClient(){
@@ -19,7 +19,7 @@ public class ChatClient {
 
     public static void main(String[] args) {
 		Scanner scanner;
-		String message;
+		String message = "";
 
 		scp = new SCPClient();
 		scanner = new Scanner(System.in);
@@ -30,6 +30,12 @@ public class ChatClient {
 		// Get a username for the user.
 		System.out.print("Please enter a username: ");
 		username = scanner.nextLine();
+
+		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+			public void run() {
+				System.out.println("Successfully shut down the client.");
+			}
+		}));
 		
 		
 		if (!scp.connect(hostname, port, username)) System.out.println("Could not connect to server " + hostname + ":" + port);
@@ -37,18 +43,28 @@ public class ChatClient {
 			String recieved;
 			while (true) {
 				recieved = scp.waitMessage();
-				
+
 				System.out.println("SERVER: " + recieved.replace("\\n", System.lineSeparator() + "SERVER: ") );
 				
-				if (!recieved.equals("")) {
+				if(recieved.equals("DISCONNECT")){
+					break;
+				}
+				
+				notBlank = true;
+				while(notBlank)
+				{
 					System.out.print("Message to Server: ");
 					message = scanner.nextLine();
-					if (message.equals("DISCONNECT")) {
-						scp.disconnect();
-						break;
-					}
-					else scp.chat(message);
+					if(message.equals("")){}
+					else 	notBlank = false;
 				}
+
+
+				if (message.equals("DISCONNECT")) {
+					scp.disconnect();
+					break;
+				}
+				else scp.chat(message);
 			}
 			scanner.close();
 				

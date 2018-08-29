@@ -1,13 +1,14 @@
 import java.util.Scanner;
 import scp_server.SCPServer;
+import java.lang.*;
 
 public class ChatServer {
 	private static SCPServer scp;
 	
 	public static void main(String[] args){
 		Scanner scanner;
-		String input;
-		Boolean server = true;
+		String input = "";
+		Boolean server = true, notBlank = true;
 
 		if 	(args.length > 3) {
 			System.out.println("Too many arguements specified.");
@@ -27,8 +28,10 @@ public class ChatServer {
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			public void run() {
 				System.out.println("Successfully shut down the server.");
+				return;
 			}
 		}));
+
 		try {
 			scp = new SCPServer();
 			while(server)
@@ -41,10 +44,20 @@ public class ChatServer {
 				while(scp.isConnected())
 				{
 					String received = scp.waitInput();
-					if (!received.equals("")){
+					if (!received.equals("DISCONNECT")){
 						System.out.println(scp.getUser() + ": " + received.replace("\\n", System.lineSeparator() + scp.getUser() + ": ") );
-						System.out.print("Message to " + scp.getUser() + ": ");
-						input = scanner.nextLine();
+						
+
+						notBlank = true;
+						while(notBlank)
+						{
+							System.out.print("Message to " + scp.getUser() + ": ");
+							input = scanner.nextLine();
+							if(input.equals("")){}
+							else 	notBlank = false;
+						}
+
+
 						if (input.equals("DISCONNECT"))	{
 							System.out.println("Disconnecting " + scp.getUser() + " from this session.");
 							scp.disconnect();
@@ -54,7 +67,7 @@ public class ChatServer {
 					}
 					else {
 						System.out.println(scp.getUser() + " terminated the connection.");
-						scp.disconnect();
+						scp.acknowledgeDisconnect();
 						break;
 					}
 				}
@@ -101,6 +114,9 @@ public class ChatServer {
 	  * postconditions:	Returns a boolean value, indicating whether the port is valid or not. True => valid.
 	  */
 	private static boolean validatePort(int port) {
-		return true;
+		if(port > 1023)
+			return true;
+		
+		return false;
 	}	
 }
