@@ -2,14 +2,14 @@ import java.util.Scanner;
 import scp_server.SCPServer;
 import java.lang.*;
 
-public class ChatServer {
+public class ChatServer extends Thread {
 	private static SCPServer scp;
+	static Scanner scanner;
+	static boolean isAlive = false, notBlank = true, server = true, clientDisconnect = true;
+
+	static Thread read, write;
 	
 	public static void main(String[] args){
-		Scanner scanner;
-		String input = "";
-		Boolean server = true, notBlank = true;
-
 		if 	(args.length > 3) {
 			System.out.println("Too many arguements specified.");
 			return;
@@ -43,35 +43,67 @@ public class ChatServer {
 				if (scp.isConnected()) System.out.println("New connection from " + scp.getUser() + "!");
 				while(scp.isConnected())
 				{
-					String received = scp.waitInput();
-					if (!received.equals("DISCONNECT")){
-						System.out.println(scp.getUser() + ": " + received.replace("\\n", System.lineSeparator() + scp.getUser() + ": ") );
-						
+					if(clientDisconnect)
+					{
+						clientDisconnect = false;
+						isAlive = true;
 
-						notBlank = true;
-						while(notBlank)
-						{
-							System.out.print("Message to " + scp.getUser() + ": ");
-							input = scanner.nextLine();
-							if(input.equals("")){}
-							else 	notBlank = false;
-						}
+						//Thread is put inside loop to instantiate new thread each new client.
+						read = new Thread(){
+						    public void run(){
+							    String received;
+							    while(isAlive){
+							        received = scp.waitInput();  
+									if (!received.equals("DISCONNECT")){
+										System.out.println("\n"+scp.getUser() + ": " + received.replace("\\n", System.lineSeparator() + scp.getUser() + ": ") );						
+									}
+									else {
+										System.out.println(scp.getUser() + " terminated the connection.");
+										isAlive = false;
+										scp.acknowledgeDisconnect();
+										clientDisconnect = true;
+										break;
+									}
+								}
+						    }
+						};
+
+						//Thread is put inside loop to instantiate new thread each new client.
+						write = new Thread(){
+						    public void run(){
+								String input = "";
+								while(isAlive){
+									
+									notBlank = true;
+									while(notBlank)
+									{
+										System.out.print("Message to " + scp.getUser() + ": ");
+										//try{
+										//}catch(InterruptedException e){}
+										input = scanner.nextLine(); // when client closes connection, it still sits idle on this line BUG.
+										if(input.equals("")){}
+										else 	notBlank = false;
+									}
 
 
-						if (input.equals("DISCONNECT"))	{
-							System.out.println("Disconnecting " + scp.getUser() + " from this session.");
-							scp.disconnect();
-							server = false;
-						}
-						else scp.chat(input);
+									if (input.equals("DISCONNECT"))	{
+										System.out.println("Disconnecting " + scp.getUser() + " from this session.");
+										scp.disconnect();
+										isAlive = false;
+										server = false;
+									}
+									else scp.chat(input);
+								}
+								clientDisconnect = true;
+						    }
+						};
+
+						// begins the threads.
+						read.start();
+						write.start();
 					}
-					else {
-						System.out.println(scp.getUser() + " terminated the connection.");
-						scp.acknowledgeDisconnect();
-						break;
-					}
+					
 				}
-				
 			}
 			scanner.close();
 			}
