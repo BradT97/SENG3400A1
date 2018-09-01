@@ -8,7 +8,7 @@ public class SCPServer implements SCPServerInterface {
 	private ServerSocket server;
 	private Socket connection;
 	private Writer fileWriter;
-	private String host, message, user;
+	private String host, message, user = "";
 	private int port;
 	
 	// Default Constructor.
@@ -16,8 +16,14 @@ public class SCPServer implements SCPServerInterface {
 		host = "localhost";
 		port = 3400;
 		message = "Welcome to SCP";
-		user = "";
 
+		setup();
+	}
+	
+	public SCPServer(String host, int port, String message) 	{ configure(host, port, message); setup();}
+
+	public void setup()
+	{
 		// Creates logs folder if not already created and opens file server_log for output.
 		File log_folder = new File("./logs");
 		if (!log_folder.exists()) {
@@ -45,8 +51,6 @@ public class SCPServer implements SCPServerInterface {
 		}));
 	}
 	
-	public SCPServer(String host, int port, String message) 	{ configure(host, port, message); }
-	
 	public void configure(String host, int port, String message){
 		this.host = host;
 		this.port = port;
@@ -54,13 +58,11 @@ public class SCPServer implements SCPServerInterface {
 	}
 
 	public void start(){
-		
-
 		try {
 			server = (host.equals("localhost")) 
 			? new ServerSocket(port, 1, InetAddress.getLocalHost())
 			: new ServerSocket(port, 1, InetAddress.getByName(host));
-			
+
 			connection = server.accept();
 			
 			PrintWriter out = new PrintWriter(connection.getOutputStream(), true);

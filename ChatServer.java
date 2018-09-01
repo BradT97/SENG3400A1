@@ -1,4 +1,4 @@
-import java.util.Scanner;
+import java.util.*;
 import scp_server.SCPServer;
 import java.lang.*;
 
@@ -10,6 +10,9 @@ public class ChatServer extends Thread {
 	static Thread read, write;
 	
 	public static void main(String[] args){
+		scp = new SCPServer();
+
+		// get args from command line
 		if 	(args.length > 3) {
 			System.out.println("Too many arguements specified.");
 			return;
@@ -19,27 +22,35 @@ public class ChatServer extends Thread {
 				System.out.println("Invalid arguements specified.");
 				return;
 			}
+			else
+			{
+				scp = new SCPServer(args[0], Integer.parseInt(args[1]), args[2]);
+			}
 		}
 		
 		// Start server listening on port.
 		System.out.println("Starting up a new SCP Server!");
 		scanner = new Scanner(System.in);
 
+		// Shutdown hook
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			public void run() {
+				server = false;
 				System.out.println("Successfully shut down the server.");
 				return;
 			}
 		}));
 
 		try {
-			scp = new SCPServer();
+			
 			while(server)
 			{
-				
+				System.out.println("why are you here again");
 				System.out.println("Server is waiting for a connection on port " + scp.getPort() + "...");
+				// start listening on the server
 				scp.start();
-				
+
+				// Once connected enter main loop.
 				if (scp.isConnected()) System.out.println("New connection from " + scp.getUser() + "!");
 				while(scp.isConnected())
 				{
@@ -51,12 +62,18 @@ public class ChatServer extends Thread {
 						//Thread is put inside loop to instantiate new thread each new client.
 						read = new Thread(){
 						    public void run(){
+
 							    String received;
-							    while(isAlive){
-							        received = scp.waitInput();  
+							    while(isAlive){ // while Thread is still active
+							        // waits for input from the client
+							        received = scp.waitInput();
+
+							        // chat protocol over multiple lines.
 									if (!received.equals("DISCONNECT")){
 										System.out.println("\n"+scp.getUser() + ": " + received.replace("\\n", System.lineSeparator() + scp.getUser() + ": ") );						
 									}
+
+									// user disconnected from the server
 									else {
 										System.out.println(scp.getUser() + " terminated the connection.");
 										isAlive = false;
@@ -71,38 +88,42 @@ public class ChatServer extends Thread {
 						//Thread is put inside loop to instantiate new thread each new client.
 						write = new Thread(){
 						    public void run(){
+
 								String input = "";
-								while(isAlive){
+								while(isAlive){ // while Thread is still active
 									
+									// checks if the user put an empty string
 									notBlank = true;
-									while(notBlank)
+									while(notBlank) 
 									{
-										System.out.print("Message to " + scp.getUser() + ": ");
-										//try{
-										//}catch(InterruptedException e){}
-										input = scanner.nextLine(); // when client closes connection, it still sits idle on this line BUG.
-										if(input.equals("")){}
-										else 	notBlank = false;
+										try{
+											System.out.print("Message to " + scp.getUser() + ": ");
+											// message to send the the client
+											input = scanner.nextLine(); // BUG when client closes connection, it still sits idle on this line BUG. ////////////////////////////////////
+											if(input.equals("")){}
+											else 	notBlank = false;
+										}catch(NoSuchElementException e){}
 									}
 
-
+									// server disconnects
 									if (input.equals("DISCONNECT"))	{
 										System.out.println("Disconnecting " + scp.getUser() + " from this session.");
 										scp.disconnect();
 										isAlive = false;
 										server = false;
+										break;
 									}
+									// chats to the client
 									else scp.chat(input);
 								}
 								clientDisconnect = true;
 						    }
 						};
 
-						// begins the threads.
+						// begins the reading and writing threads.
 						read.start();
 						write.start();
 					}
-					
 				}
 			}
 			scanner.close();
@@ -112,14 +133,14 @@ public class ChatServer extends Thread {
 		}
 	}
 	
-	private static boolean configureServer(String[] config){
-		if (!validateHostname(config[0])){
-			System.out.println("CONFIGURE_SERVER: Invalid host address.");
-			return false;
-		}	
+	/** configureServer(String[] config)
+	  * preconditions:	None.
+	  * postconditions:	Returns a boolean value, indicating whether the port within a certain range or not and sets the SCP Server values. True => valid.
+	  */
+	private static boolean configureServer(String[] config){	
 		try {
 			int port = Integer.parseInt(config[1]);
-			if (!validatePort(port)){
+			if (port < 1023){
 				System.out.println("CONFIGURE_SERVER: Invalid port specified.");
 				return false;
 			}
@@ -132,23 +153,4 @@ public class ChatServer extends Thread {
 			return false;
 		}
 	}
-	
-	/** validateHostname(String hostname)
-	  * preconditions:	None.
-	  * postconditions:	Returns a boolean value, indicating whether the host name is valid or not. True => valid.
-	  */
-	private static boolean validateHostname(String hostname){
-		return true;
-	}
-	
-	/** validateHostname(int port)
-	  * preconditions:	None.
-	  * postconditions:	Returns a boolean value, indicating whether the port is valid or not. True => valid.
-	  */
-	private static boolean validatePort(int port) {
-		if(port > 1023)
-			return true;
-		
-		return false;
-	}	
 }

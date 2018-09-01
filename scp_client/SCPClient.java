@@ -9,6 +9,12 @@ public class SCPClient implements SCPClientInterface {
     private Socket connection;
     private PrintWriter out;
     private BufferedReader in;
+    private String hostname;
+    private int port;
+
+    public SCPClient() { hostname = "localhost";    port = 3400;}
+
+    public SCPClient(String name, int port) { hostname = name;  this.port = port;}
 
     public boolean connect(String host, int port, String username){
         // Constructs header to send to SCPServer.
@@ -160,9 +166,20 @@ public class SCPClient implements SCPClientInterface {
             in.close();
             out.close();
             connection.close();
+            System.exit(0);
         } catch (IOException e) {
 
         }
+    }
+
+    public String getHost()
+    {
+        return hostname;
+    }
+
+    public int getPort()
+    {
+        return port;
     }
 }
 
