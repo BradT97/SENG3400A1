@@ -1,3 +1,11 @@
+/*  
+    ChatClient.java
+    
+    *Date: 2/09/2018
+    *Descripion:
+    *   Contains functions for a Client to connect with a SCP server using threads.
+ */
+
 import scp_client.SCPClient;
 
 import java.net.*;

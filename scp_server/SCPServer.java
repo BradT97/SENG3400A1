@@ -1,3 +1,11 @@
+/*  
+    SCPServer.java
+    
+    *Date: 2/09/2018
+    *Descripion:
+    *   Contains functions for a Server to host a SCP server.
+ */
+
 package scp_server;
 
 import java.io.*;
@@ -20,6 +28,7 @@ public class SCPServer implements SCPServerInterface {
 		setup();
 	}
 	
+	//Constructor with configuration settings
 	public SCPServer(String host, int port, String message) 	{ configure(host, port, message); setup();}
 
 	public void setup()
@@ -68,6 +77,7 @@ public class SCPServer implements SCPServerInterface {
 			PrintWriter out = new PrintWriter(connection.getOutputStream(), true);
 			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 
+			// connection input string to start the server connection with the client
 			String input; boolean terminate = false;
 			while ((input = in.readLine()) != null) {
 				if (terminate)	{
@@ -75,13 +85,13 @@ public class SCPServer implements SCPServerInterface {
 					fileWriter.flush();
 					break;
 				}
-				if (input.equals("SCP CONNECT")) {
+				if (input.equals("SCP CONNECT")) { // connect
 					fileWriter.write("<< Received\n" + input + "\n");
 					if (!handleConnect(in, out)){
 						System.out.println("Could not establish a connection.");
 					}
 				}
-				else if (input.equals("SCP ACKNOWLEDGE")) {
+				else if (input.equals("SCP ACKNOWLEDGE")) { // acknowledge
 					fileWriter.write("<< Received\n" + input + "\n");
 					while ((input = in.readLine()) != null) {
 						fileWriter.write(input + "\n");
@@ -92,7 +102,7 @@ public class SCPServer implements SCPServerInterface {
 					chat(message);
 					return;
 				}
-				else if (input.equals("SCP DISCONNECT" )){
+				else if (input.equals("SCP DISCONNECT" )){ //disconnect
 					fileWriter.write("<< Received\n" + input + "\n");
 					terminate = true;
 				}
@@ -127,7 +137,7 @@ public class SCPServer implements SCPServerInterface {
 	public boolean chat (String msg){
 		try {
 			PrintWriter out = new PrintWriter(connection.getOutputStream(), true);
-			String outString = "SCP CHAT\nREMOTEADDRESS <remote>\nREMOTEPORT <port>\nMESSAGECONTENT\n\n" + msg + "\nSCP END";
+			String outString = "SCP CHAT\nREMOTEADDRESS " + this.host + "\nREMOTEPORT " + this.port + "\nMESSAGECONTENT\n\n" + msg + "\nSCP END";
 
 			out.println(outString);
 			fileWriter.write(">> SENT\n" + outString + "\n\n");
@@ -180,6 +190,7 @@ public class SCPServer implements SCPServerInterface {
 			String input, output = "";
 			boolean terminate = false, contentFlag = false;
 			fileWriter.write("<< RECEIVED\n");
+
 			while ((input = in.readLine()) != null) {
 				fileWriter.write(input + "\n");
 				if (input.equals("SCP DISCONNECT")) 	terminate = true;
@@ -222,7 +233,7 @@ public class SCPServer implements SCPServerInterface {
 			}
 			
 			if (splitInput[0].equals(keywords[2])) { 	//REQUESTCREATED
-				created = String.valueOf(splitInput[1]); // test for empty input or " ".
+				created = String.valueOf(splitInput[1]);
 			}
 
 			if (splitInput[0].equals(keywords[3])) { 	// USERNAME

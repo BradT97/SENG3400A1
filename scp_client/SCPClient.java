@@ -1,3 +1,11 @@
+/*  
+    SCPClient.java
+    
+    *Date: 2/09/2018
+    *Descripion:
+    *   Contains functions for a Client to connect with a SCP server.
+ */
+
 package scp_client;
 
 import java.net.*;
@@ -9,7 +17,7 @@ public class SCPClient implements SCPClientInterface {
     private Socket connection;
     private PrintWriter out;
     private BufferedReader in;
-    private String hostname;
+    private String hostname, username;
     private int port;
 
     public SCPClient() { hostname = "localhost";    port = 3400;}
@@ -18,6 +26,7 @@ public class SCPClient implements SCPClientInterface {
 
     public boolean connect(String host, int port, String username){
         // Constructs header to send to SCPServer.
+        this.username = username;
         long epoch = (new Date()).getTime();
         String input, header = "SCP CONNECT\nSERVERADDRESS " + host + "\nSERVERPORT " + port + "\nREQUESTCREATED " + epoch + "\nUSERNAME \"" + username + "\"\nSCP END";
 
@@ -103,10 +112,8 @@ public class SCPClient implements SCPClientInterface {
     }
 
     public boolean acknowledgeConnection()  {
-        String username = "<user>", server = "<server ip>";
-        int port = -1;
-        String outString = "SCP ACKNOWLEDGE\nUSERNAME " + username + "\nSERVERADDRESS " + server + "\nSERVERPORT " + port + "\nSCP END";
-        //outString += "\nSCP DISCONNECT\nSCP END";
+        String outString = "SCP ACKNOWLEDGE\nUSERNAME " + username + "\nSERVERADDRESS " + getHost() + "\nSERVERPORT " + getPort() + "\nSCP END";
+
         out.println(outString);
         return true;
     }
@@ -116,7 +123,7 @@ public class SCPClient implements SCPClientInterface {
         boolean terminate = false, contentFlag = false;
         try {
             while ((input = in.readLine()) != null) {
-                //System.out.println(input);
+
 				if (input.equals("SCP DISCONNECT")) 	terminate = true;
 
 				if (contentFlag && input.equals(""))	contentFlag = true;
@@ -141,8 +148,7 @@ public class SCPClient implements SCPClientInterface {
     public boolean chat(String message) {
         if (connection.isClosed()) return false;
 
-        String remoteIp = "<remote ip>", remotePort = "<remote port>";
-        String outString = "SCP CHAT\nREMOTEADDRESS " + remoteIp + "\nREMOTEPORT " + remotePort + "\nMESSAGECONTENT\n\n" + message + "\nSCP END";
+        String outString = "SCP CHAT\nREMOTEADDRESS " + getHost() + "\nREMOTEPORT " + getPort() + "\nMESSAGECONTENT\n\n" + message + "\nSCP END";
 
         out.println(outString);
         return true;

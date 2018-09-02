@@ -1,3 +1,12 @@
+/*  
+    ChatServer.java
+    
+    *Date: 2/09/2018
+    *Descripion:
+    *   Contains functions for a Server to communicate with a SCP server using threads.
+ */
+
+
 import java.util.*;
 import scp_server.SCPServer;
 import java.lang.*;
@@ -45,7 +54,6 @@ public class ChatServer extends Thread {
 			
 			while(server)
 			{
-				System.out.println("why are you here again");
 				System.out.println("Server is waiting for a connection on port " + scp.getPort() + "...");
 				// start listening on the server
 				scp.start();
@@ -59,7 +67,7 @@ public class ChatServer extends Thread {
 						clientDisconnect = false;
 						isAlive = true;
 
-						//Thread is put inside loop to instantiate new thread each new client.
+						//read Thread is put inside loop to instantiate new thread each new client.
 						read = new Thread(){
 						    public void run(){
 
@@ -85,10 +93,10 @@ public class ChatServer extends Thread {
 						    }
 						};
 
-						//Thread is put inside loop to instantiate new thread each new client.
+						//write Thread is put inside loop to instantiate new thread each new client.
 						write = new Thread(){
 						    public void run(){
-
+						    	try{
 								String input = "";
 								while(isAlive){ // while Thread is still active
 									
@@ -111,12 +119,14 @@ public class ChatServer extends Thread {
 										scp.disconnect();
 										isAlive = false;
 										server = false;
+										System.exit(0);
 										break;
 									}
 									// chats to the client
 									else scp.chat(input);
 								}
 								clientDisconnect = true;
+							}catch(Exception e){}
 						    }
 						};
 

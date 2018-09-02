@@ -1,3 +1,12 @@
+/*  
+    SCPServerInterface.java
+    
+    *Date: 2/09/2018
+    *Descripion:
+    *   Interface for a Server class.
+ */
+
+
 package scp_server;
 
 import java.net.*;
@@ -49,4 +58,9 @@ public interface SCPServerInterface {
 	 * Method to close the connection to the client.
 	 */
 	public void disconnect();
+
+	/** acknowledgeDisconnect()
+	 * Method to  acknowledge the client leaving the session.
+	 */
+	public void acknowledgeDisconnect();
 }
